@@ -1,7 +1,10 @@
-from config.logic import valid_data, rsi_filter, fetch_price, csv_import, fetcher, filtered
+from config.logic import valid_data, rsi_filter, fetch_price, csv_import, fetcher, filtered, csv_output, worker
 import yfinance as yf
 import pandas as pd
 import pytest
+from unittest.mock import patch, MagicMock
+
+import os.path
 
 def test_csv_imports():
     path = csv_import("inputs/fake.csv")
@@ -11,6 +14,18 @@ def test_invalid_path():
     with pytest.raises(FileNotFoundError):
         csv_import("bad/path/fake.csv")
 
+def test_csv_output(tmp_path):
+    df = [{"ticker": "test1", "rsi": 45.2}, {"ticker": "test2", "rsi": 28.1}]
+    path = tmp_path / "output.csv"
+    file = csv_output(df, path)
+    assert os.path.exists(path) == True
+
+def test_wrong_df(tmp_path):
+    df = [{"column": "test1", "rsi": 45.2}, {"column": "test2", "rsi": 28.1}]
+    path = tmp_path / "output.csv"
+    #file = csv_output(df, path)
+    with pytest.raises(ValueError):
+        csv_output(df, path)
 
 def test_small_amt_rows():
     fake_df = [1,2,3,4,5,6]
@@ -45,12 +60,60 @@ def test_data_not_null():
     ticker = fetch_price("MSFT")
     assert ticker.notnull().all() == True
 
-def test_fethcer():
-    df = csv_import ("inputs/fake2.csv")
-    results = fetcher(df)
-    assert True == isinstance(results, list)
-    assert results[2]["ticker"] == "TRI"
-    assert all("rsi" in result for result in results)
+def test_fetcher_success():
+    """Test fetcher returns correct data when valid prices are found."""
+    ticker = "AAPL"
+    mock_prices = [100, 101, 102]
+    mock_rsi_series = pd.Series([30, 40, 55.5])
+
+    with patch("config.logic.fetch_price", return_value=mock_prices), \
+         patch("config.logic.valid_data", return_value=True), \
+         patch("config.logic.calculate_rsi", return_value=mock_rsi_series):
+        
+        result = fetcher(ticker)
+        
+        assert result == {"ticker": "AAPL", "rsi": 55.5}
+        assert isinstance(result["rsi"], float)
+
+def test_fetcher_invalid_data():
+    """Test fetcher returns None if data is invalid."""
+    with patch("config.logic.fetch_price", return_value=[]), \
+         patch("config.logic.valid_data", return_value=False):
+        
+        result = fetcher("INVALID")
+        assert result is None
+
+
+def test_worker_filters_none_values():
+    """Test worker aggregates results and filters out None returns."""
+    # Setup mock dataframe
+    df = pd.DataFrame({"ticker": ["AAPL", "GOOGL", "TSLA"]})
+    
+    # Mocking fetcher to return a mix of data and None
+    mock_responses = [
+        {"ticker": "AAPL", "rsi": 50.0},
+        None,
+        {"ticker": "TSLA", "rsi": 70.0}
+    ]
+
+    with patch("config.logic.fetcher", side_effect=mock_responses):
+        result = worker(df)
+        
+        # Should only contain the 2 valid responses
+        assert len(result) == 2
+        assert result[0]["ticker"] == "AAPL"
+        assert result[1]["ticker"] == "TSLA"
+
+@patch("config.logic.ThreadPoolExecutor")
+def test_worker_thread_config(mock_executor,):
+    """Verifies the worker actually attempts to use 5 threads."""
+    df = pd.DataFrame({"ticker": ["AAPL"]})
+    
+    # We just want to see if the executor was initialized correctly
+    worker(df)
+    
+    # Check if ThreadPoolExecutor was called with max_workers=5
+    mock_executor.assert_called_once_with(max_workers=5)
 
 def test_filtered():
     df = [{"ticker": "test1", "rsi": 45.2}, {"ticker": "test2", "rsi": 28.1}]
