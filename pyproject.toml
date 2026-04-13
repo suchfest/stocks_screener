@@ -1,0 +1,55 @@
+  # --- Code formatting with Black ---  
+[tool.black]  
+target-version = ["py311"]  
+line-length = 100
+  
+# --- Modern linting and formatting with Ruff ---  
+[tool.ruff]  
+target-version = "py311"  
+exclude = [  
+    ".git", "__pycache__", ".nox", ".venv", "venv", "build", "dist", ".eggs",  
+]
+  
+[tool.ruff.lint]  
+# Select a comprehensive set of rules for high-quality code  
+select = [  
+    "E",   # pycodestyle errors  
+    "W",   # pycodestyle warnings  
+    "F",   # pyflakes  
+    "I",   # isort (import sorting)  
+    "A",   # flake8-builtins (prevents shadowing)  
+    "B",   # flake8-bugbear  
+    "C4",  # flake8-comprehensions  
+    "SIM", # flake8-simplify (powerful refactoring suggestions)  
+    "T20", # flake8-print (flags leftover print statements)  
+    "UP",  # pyupgrade  
+    "RUF", # Ruff-specific rules  
+]  
+ignore = ["E501"] # line too long is handled by Black
+  
+[tool.ruff.lint.per-file-ignores]  
+"__init__.py" = ["F401"] # Allow unused imports in __init__.py
+  
+[tool.ruff.lint.isort] 
+known-first-party = ["scripts"]  
+lines-after-imports = 2
+  
+# --- Type checking with mypy ---  
+[tool.mypy]  
+python_version = "3.11"  
+warn_return_any = true  
+warn_unused_configs = true  
+check_untyped_defs = true  
+no_implicit_optional = true  
+ignore_missing_imports = true  
+exclude = [ "build/", "dist/", "\\.eggs/", "venv/", "\\.venv/", "\\.nox/"]
+
+# --- Security Scanning with Bandit ---  
+[tool.bandit]  
+exclude_dirs = [  
+    ".nox", ".venv", "venv", "__pycache__", "*.pyc", "build", "dist",  
+    ".eggs", "*.egg-info", ".mypy_cache", ".ruff_cache", ".pytest_cache",  
+]  
+
+[tool.bandit.assert_used]  
+skips = ["tests/*", "*_test.py", "noxfile.py"]  

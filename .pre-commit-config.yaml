@@ -1,0 +1,11 @@
+# Run full nox suite on every git commit (same checks as nox, excluding clean).
+# Install: pre-commit install
+# Then: git commit runs nox -s format_code -s lint -s typecheck -s security -s dependency_check -s coverage
+repos:
+  - repo: local
+    hooks:
+      - id: nox
+        name: nox (format, lint, typecheck, security, dependency_check, coverage)
+        entry: nox -s format_code -s lint -s typecheck -s security -s dependency_check -s coverage
+        language: system
+        pass_filenames: false

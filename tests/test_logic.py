@@ -1,10 +1,19 @@
-from config.logic import valid_data, rsi_filter, fetch_price, csv_import, fetcher, filtered, csv_output, worker
-import yfinance as yf
+import os.path
+from unittest.mock import MagicMock, patch
+
 import pandas as pd
 import pytest
-from unittest.mock import patch, MagicMock
 
-import os.path
+from config.logic import (
+    csv_import,
+    csv_output,
+    fetch_price,
+    fetcher,
+    filtered,
+    rsi_filter,
+    valid_data,
+    worker,
+)
 
 def test_csv_imports():
     path = csv_import("inputs/fake.csv")
@@ -47,18 +56,26 @@ def test_rsi_filter_no():
     result = rsi_filter(rsi)
     assert result == False
 
-def test_is_pd_series():
+
+@patch("config.logic.yf.Ticker")
+def test_fetch_price_returns_usable_close_series(mock_ticker_cls):
+    """Single check for fetch_price shape: Series, enough rows, no nulls (mocked, no network)."""
+    closes = pd.Series(
+        range(100, 115),
+        index=pd.date_range("2024-01-01", periods=15, freq="D"),
+        name="Close",
+    )
+    mock_hist = closes.to_frame()
+    mock_inst = MagicMock()
+    mock_inst.history.return_value = mock_hist
+    mock_ticker_cls.return_value = mock_inst
+
     price = fetch_price("MSFT")
-    assert True == isinstance(price, pd.Series)
 
-def test_if_ticker_valid_data():
-    ticker = fetch_price("MSFT")
-    lenth = valid_data(ticker)
-    assert lenth == True
+    assert isinstance(price, pd.Series)
+    assert valid_data(price) is True
+    assert price.notnull().all()
 
-def test_data_not_null():
-    ticker = fetch_price("MSFT")
-    assert ticker.notnull().all() == True
 
 def test_fetcher_success():
     """Test fetcher returns correct data when valid prices are found."""

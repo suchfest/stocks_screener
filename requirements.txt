@@ -1,0 +1,25 @@
+# formatter  
+black==24.4.2
+  
+# linter & formatter  
+ruff==0.4.8
+  
+# docstring formatter & checker  
+docformatter==1.7.5  
+pydocstyle[toml]==6.3.0
+  
+# type checker  
+mypy==1.10.0
+mypy-upgrade>=0.0.1b6
+  
+# security scanner  
+bandit==1.7.9
+pip-audit>=7.0.0
+  
+# testing framework  
+pytest==8.2.2
+pytest-cov==5.0.0
+  
+# automation runner  
+nox==2024.4.15
+pre-commit>=3.6.0  
