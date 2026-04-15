@@ -1,11 +1,13 @@
-import pandas as pd
-import requests
 import io
 import os
 
+import pandas as pd
+import requests  # type: ignore[import-untyped] # FIX ME
+
+
 # ── HTTP mirrors of the NASDAQ FTP files (more reliable than ftp://) ─────────
 NASDAQ_URL = "https://ftp.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"
-OTHER_URL  = "https://ftp.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"
+OTHER_URL = "https://ftp.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"
 
 # Full exchange code map (both files combined)
 EXCHANGE_MAP = {
@@ -42,27 +44,27 @@ def _fetch(url: str) -> pd.DataFrame:
 
 def get_nasdaq_listed() -> pd.DataFrame:
     """Parse nasdaqlisted.txt → clean DataFrame."""
-    print("  📡 Downloading NASDAQ-listed symbols...")
     df = _fetch(NASDAQ_URL)
 
     # Columns: Symbol | Security Name | Market Category | Test Issue |
     #          Financial Status | Round Lot Size | ETF | NextShares
-    df = df[df["Test Issue"] == "N"]          # drop test issues
+    df = df[df["Test Issue"] == "N"]  # drop test issues
     df = df[df["Symbol"].notna()]
     df = df[~df["Symbol"].str.contains(r"\$|=|\^", na=False)]  # drop warrants/rights
 
     df["exchange"] = df["Market Category"].map(EXCHANGE_MAP).fillna("NASDAQ")
-    df["type"]     = df["ETF"].apply(lambda x: "ETF" if x == "Y" else "Stock")
+    df["type"] = df["ETF"].apply(lambda x: "ETF" if x == "Y" else "Stock")
 
-    return df[["Symbol", "Security Name", "exchange", "type"]].rename(columns={
-        "Symbol": "ticker",
-        "Security Name": "name",
-    })
+    return df[["Symbol", "Security Name", "exchange", "type"]].rename(
+        columns={
+            "Symbol": "ticker",
+            "Security Name": "name",
+        }
+    )
 
 
 def get_other_listed() -> pd.DataFrame:
     """Parse otherlisted.txt → clean DataFrame."""
-    print("  📡 Downloading NYSE/AMEX/other symbols...")
     df = _fetch(OTHER_URL)
 
     # Columns: ACT Symbol | Security Name | Exchange | CQS Symbol |
@@ -72,21 +74,19 @@ def get_other_listed() -> pd.DataFrame:
     df = df[~df["ACT Symbol"].str.contains(r"\$|=|\^", na=False)]
 
     df["exchange"] = df["Exchange"].map(EXCHANGE_MAP).fillna("Other")
-    df["type"]     = df["ETF"].apply(lambda x: "ETF" if x == "Y" else "Stock")
+    df["type"] = df["ETF"].apply(lambda x: "ETF" if x == "Y" else "Stock")
 
-    return df[["ACT Symbol", "Security Name", "exchange", "type"]].rename(columns={
-        "ACT Symbol": "ticker",
-        "Security Name": "name",
-    })
+    return df[["ACT Symbol", "Security Name", "exchange", "type"]].rename(
+        columns={
+            "ACT Symbol": "ticker",
+            "Security Name": "name",
+        }
+    )
 
 
 def get_all_us_tickers() -> pd.DataFrame:
-    print("\n" + "=" * 60)
-    print("US TICKER DOWNLOADER — NASDAQ TRADER (official source)")
-    print("=" * 60)
-
     nasdaq = get_nasdaq_listed()
-    other  = get_other_listed()
+    other = get_other_listed()
 
     combined = pd.concat([nasdaq, other], ignore_index=True)
 
@@ -102,15 +102,10 @@ def get_all_us_tickers() -> pd.DataFrame:
     mask = combined["ticker"].str.match(r"^[A-Z]{1,5}$")  # clean tickers only
     combined = combined[mask]
 
-    print(f"\n{'='*60}")
-    print(f"  Total tickers: {len(combined)}")
-    print(f"\n  By exchange:")
-    for exch, cnt in combined["exchange"].value_counts().items():
-        print(f"    {exch:<35} {cnt:>5}")
-    print(f"\n  By type:")
-    for t, cnt in combined["type"].value_counts().items():
-        print(f"    {t:<35} {cnt:>5}")
-    print("=" * 60)
+    for _exch, _cnt in combined["exchange"].value_counts().items():
+        pass
+    for _t, _cnt in combined["type"].value_counts().items():
+        pass
 
     return combined
 
@@ -122,13 +117,8 @@ def save(df: pd.DataFrame, filename: str = OUTPUT_FILE) -> str:
         script_dir = os.getcwd()  # fallback for interactive/notebook use
     path = os.path.join(script_dir, filename)
     df.to_csv(path, index=False, encoding="utf-8")
-    print(f"\n✅ Saved {len(df)} tickers → {path}")
-    print(f"   Columns: {list(df.columns)}")
-    print(f"   Stocks: {(df['type'] == 'Stock').sum()}")
-    print(f"   ETFs:   {(df['type'] == 'ETF').sum()}")
     # Sanity check
     assert os.path.exists(path), "❌ File was not written!"
-    print(f"   File size: {os.path.getsize(path):,} bytes")
     return path
 
 

@@ -1,0 +1,91 @@
+Ticker,Name,Index,Type
+ADS.DE.DE,Adidas,DAX 40,Stock
+AIR.PA.DE,Airbus,DAX 40,Stock
+ALV.DE.DE,Allianz,DAX 40,Stock
+BAS.DE.DE,BASF,DAX 40,Stock
+BAYN.DE.DE,Bayer,DAX 40,Stock
+BEI.DE.DE,Beiersdorf,DAX 40,Stock
+BMW.DE.DE,BMW,DAX 40,Stock
+BNR.DE.DE,Brenntag,DAX 40,Stock
+CBK.DE.DE,Commerzbank,DAX 40,Stock
+CON.DE.DE,Continental,DAX 40,Stock
+DTG.DE.DE,Daimler Truck,DAX 40,Stock
+DBK.DE.DE,Deutsche Bank,DAX 40,Stock
+DB1.DE.DE,Deutsche Börse,DAX 40,Stock
+DHL.DE.DE,Deutsche Post,DAX 40,Stock
+DTE.DE.DE,Deutsche Telekom,DAX 40,Stock
+EOAN.DE.DE,E.ON,DAX 40,Stock
+FRE.DE.DE,Fresenius,DAX 40,Stock
+FME.DE.DE,Fresenius Medical Care,DAX 40,Stock
+G1A.DE.DE,GEA Group,DAX 40,Stock
+HNR1.DE.DE,Hannover Re,DAX 40,Stock
+HEI.DE.DE,Heidelberg Materials,DAX 40,Stock
+HEN3.DE.DE,Henkel,DAX 40,Stock
+IFX.DE.DE,Infineon Technologies,DAX 40,Stock
+MBG.DE.DE,Mercedes-Benz Group,DAX 40,Stock
+MRK.DE.DE,Merck,DAX 40,Stock
+MTX.DE.DE,MTU Aero Engines,DAX 40,Stock
+MUV2.DE.DE,Munich Re,DAX 40,Stock
+PAH3.DE.DE,Porsche SE,DAX 40,Stock
+QIA.DE.DE,Qiagen,DAX 40,Stock
+RHM.DE.DE,Rheinmetall,DAX 40,Stock
+RWE.DE.DE,RWE,DAX 40,Stock
+SAP.DE.DE,SAP,DAX 40,Stock
+G24.DE.DE,Scout24,DAX 40,Stock
+SIE.DE.DE,Siemens,DAX 40,Stock
+ENR.DE.DE,Siemens Energy,DAX 40,Stock
+SHL.DE.DE,Siemens Healthineers,DAX 40,Stock
+SY1.DE.DE,Symrise,DAX 40,Stock
+VOW3.DE.DE,Volkswagen Group,DAX 40,Stock
+VNA.DE.DE,Vonovia,DAX 40,Stock
+ZAL.DE.DE,Zalando,DAX 40,Stock
+AIXA.DE,Aixtron,MDAX 50,Stock
+AT1.DE,Aroundtown,MDAX 50,Stock
+NDA.DE,Aurubis,MDAX 50,Stock
+BC8.DE,Bechtle,MDAX 50,Stock
+BFSA.DE,Befesa,MDAX 50,Stock
+GBF.DE,Bilfinger,MDAX 50,Stock
+AFX.DE,Carl Zeiss Meditec,MDAX 50,Stock
+EVD.DE,CTS Eventim,MDAX 50,Stock
+DHER.DE,Delivery Hero,MDAX 50,Stock
+LHA.DE,Lufthansa,MDAX 50,Stock
+ECV.DE,Encavis,MDAX 50,Stock
+EVK.DE,Evonik,MDAX 50,Stock
+EVT.DE,Evotec,MDAX 50,Stock
+FRA.DE,Fraport,MDAX 50,Stock
+FNTN.DE,Freenet,MDAX 50,Stock
+FRE.DE,Fresenius Medical Care,MDAX 50,Stock
+FPE3.DE,Fuchs Petrolub,MDAX 50,Stock
+G1A.DE,GEA Group,MDAX 50,Stock
+GXI.DE,Gerresheimer,MDAX 50,Stock
+HLE.DE,Hella,MDAX 50,Stock
+HFG.DE,HelloFresh,MDAX 50,Stock
+HAG.DE,Hensoldt,MDAX 50,Stock
+HOT.DE,Hochtief,MDAX 50,Stock
+BOSS.DE,Hugo Boss,MDAX 50,Stock
+JEN.DE,Jenoptik,MDAX 50,Stock
+JUN3.DE,Jungheinrich,MDAX 50,Stock
+SDF.DE,K+S,MDAX 50,Stock
+KGX.DE,KION Group,MDAX 50,Stock
+KBX.DE,Knorr-Bremse,MDAX 50,Stock
+KRN.DE,Krones,MDAX 50,Stock
+LXS.DE,Lanxess,MDAX 50,Stock
+LEG.DE,LEG Immobilien,MDAX 50,Stock
+NEM.DE,Nemetschek,MDAX 50,Stock
+NDX1.DE,Nordex,MDAX 50,Stock
+PUM.DE,Puma,MDAX 50,Stock
+RAA.DE,Rational,MDAX 50,Stock
+RDC.DE,Redcare Pharmacy,MDAX 50,Stock
+RRTL.DE,RTL Group,MDAX 50,Stock
+G24.DE,Scout24,MDAX 50,Stock
+WAF.DE,Siltronic,MDAX 50,Stock
+STM.DE,Stabilus,MDAX 50,Stock
+SAX.DE,Ströer,MDAX 50,Stock
+TEG.DE,TAG Tegernsee Immobilien und Beteiligung,MDAX 50,Stock
+TLX.DE,Talanx,MDAX 50,Stock
+TMV.DE,TeamViewe,MDAX 50,Stock
+TKA.DE,ThyssenKrupp,MDAX 50,Stock
+8TRA.DE,Traton,MDAX 50,Stock
+TUI1.DE,TUI,MDAX 50,Stock
+UTDI.DE,United Internet,MDAX 50,Stock
+WCH.DE,Wacker Chemie,MDAX 50,Stock

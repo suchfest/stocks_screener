@@ -15,46 +15,54 @@ from config.logic import (
     worker,
 )
 
+
 def test_csv_imports():
     path = csv_import("inputs/fake.csv")
     assert len(path) == 3
+
 
 def test_invalid_path():
     with pytest.raises(FileNotFoundError):
         csv_import("bad/path/fake.csv")
 
+
 def test_csv_output(tmp_path):
     df = [{"ticker": "test1", "rsi": 45.2}, {"ticker": "test2", "rsi": 28.1}]
     path = tmp_path / "output.csv"
-    file = csv_output(df, path)
-    assert os.path.exists(path) == True
+    csv_output(df, path)
+    assert os.path.exists(path) is True
+
 
 def test_wrong_df(tmp_path):
     df = [{"column": "test1", "rsi": 45.2}, {"column": "test2", "rsi": 28.1}]
     path = tmp_path / "output.csv"
-    #file = csv_output(df, path)
+    # file = csv_output(df, path)
     with pytest.raises(ValueError):
         csv_output(df, path)
 
+
 def test_small_amt_rows():
-    fake_df = [1,2,3,4,5,6]
+    fake_df = [1, 2, 3, 4, 5, 6]
     result = valid_data(fake_df)
-    assert result == False
+    assert result is False
+
 
 def test_ok_amt_rows():
-    fake_df = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+    fake_df = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     result = valid_data(fake_df)
-    assert result == True
+    assert result is True
+
 
 def test_rsi_filter_ok():
     first_rsi = 12.6
     result = rsi_filter(first_rsi)
-    assert result == True
+    assert result is True
+
 
 def test_rsi_filter_no():
     rsi = 80
     result = rsi_filter(rsi)
-    assert result == False
+    assert result is False
 
 
 @patch("config.logic.yf.Ticker")
@@ -83,20 +91,23 @@ def test_fetcher_success():
     mock_prices = [100, 101, 102]
     mock_rsi_series = pd.Series([30, 40, 55.5])
 
-    with patch("config.logic.fetch_price", return_value=mock_prices), \
-         patch("config.logic.valid_data", return_value=True), \
-         patch("config.logic.calculate_rsi", return_value=mock_rsi_series):
-        
+    with (
+        patch("config.logic.fetch_price", return_value=mock_prices),
+        patch("config.logic.valid_data", return_value=True),
+        patch("config.logic.calculate_rsi", return_value=mock_rsi_series),
+    ):
         result = fetcher(ticker)
-        
+
         assert result == {"ticker": "AAPL", "rsi": 55.5}
         assert isinstance(result["rsi"], float)
 
+
 def test_fetcher_invalid_data():
     """Test fetcher returns None if data is invalid."""
-    with patch("config.logic.fetch_price", return_value=[]), \
-         patch("config.logic.valid_data", return_value=False):
-        
+    with (
+        patch("config.logic.fetch_price", return_value=[]),
+        patch("config.logic.valid_data", return_value=False),
+    ):
         result = fetcher("INVALID")
         assert result is None
 
@@ -105,32 +116,36 @@ def test_worker_filters_none_values():
     """Test worker aggregates results and filters out None returns."""
     # Setup mock dataframe
     df = pd.DataFrame({"ticker": ["AAPL", "GOOGL", "TSLA"]})
-    
+
     # Mocking fetcher to return a mix of data and None
     mock_responses = [
         {"ticker": "AAPL", "rsi": 50.0},
         None,
-        {"ticker": "TSLA", "rsi": 70.0}
+        {"ticker": "TSLA", "rsi": 70.0},
     ]
 
     with patch("config.logic.fetcher", side_effect=mock_responses):
         result = worker(df)
-        
+
         # Should only contain the 2 valid responses
         assert len(result) == 2
         assert result[0]["ticker"] == "AAPL"
         assert result[1]["ticker"] == "TSLA"
 
+
 @patch("config.logic.ThreadPoolExecutor")
-def test_worker_thread_config(mock_executor,):
+def test_worker_thread_config(
+    mock_executor,
+):
     """Verifies the worker actually attempts to use 5 threads."""
     df = pd.DataFrame({"ticker": ["AAPL"]})
-    
+
     # We just want to see if the executor was initialized correctly
     worker(df)
-    
+
     # Check if ThreadPoolExecutor was called with max_workers=5
     mock_executor.assert_called_once_with(max_workers=5)
+
 
 def test_filtered():
     df = [{"ticker": "test1", "rsi": 45.2}, {"ticker": "test2", "rsi": 28.1}]

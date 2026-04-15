@@ -7,7 +7,10 @@ line-length = 100
 [tool.ruff]  
 target-version = "py311"  
 exclude = [  
-    ".git", "__pycache__", ".nox", ".venv", "venv", "build", "dist", ".eggs",  
+    ".git", "__pycache__", 
+    ".nox", ".venv", "venv", 
+    "build", "dist", ".eggs", 
+    ".vscode", ".env", ".gitignore"  
 ]
   
 [tool.ruff.lint]  
