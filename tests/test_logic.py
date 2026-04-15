@@ -64,10 +64,9 @@ def test_rsi_filter_no():
     result = rsi_filter(rsi)
     assert result is False
 
-
+# Single check for fetch_price shape: Series, enough rows, no nulls (mocked, no network)
 @patch("config.logic.yf.Ticker")
 def test_fetch_price_returns_usable_close_series(mock_ticker_cls):
-    """Single check for fetch_price shape: Series, enough rows, no nulls (mocked, no network)."""
     closes = pd.Series(
         range(100, 115),
         index=pd.date_range("2024-01-01", periods=15, freq="D"),
@@ -101,13 +100,11 @@ def test_fetcher_success():
         assert result == {"ticker": "AAPL", "rsi": 55.5}
         assert isinstance(result["rsi"], float)
 
-
 def test_fetcher_invalid_data():
     """Test fetcher returns None if data is invalid."""
-    with (
-        patch("config.logic.fetch_price", return_value=[]),
-        patch("config.logic.valid_data", return_value=False),
-    ):
+    with patch("config.logic.fetch_price", return_value=[]), \
+         patch("config.logic.valid_data", return_value=False):
+        
         result = fetcher("INVALID")
         assert result is None
 
