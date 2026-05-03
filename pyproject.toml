@@ -1,3 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stocks-screener"
+version = "0.1.0"
+description = "Stock screening and related utilities"
+readme = "README.md"
+requires-python = ">=3.11"
+
+# Only real Python packages (not CSV dirs like inputs/outputs).
+[tool.setuptools]
+packages = ["config", "scrapers"]
+
   # --- Code formatting with Black ---  
 [tool.black]  
 target-version = ["py311"]  

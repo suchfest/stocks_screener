@@ -1,128 +1,159 @@
-import io
-import os
-
 import pandas as pd
-import requests  # type: ignore[import-untyped] # FIX ME
+import yfinance as yf
+import time
 
-
-# ── HTTP mirrors of the NASDAQ FTP files (more reliable than ftp://) ─────────
-NASDAQ_URL = "https://ftp.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt"
-OTHER_URL = "https://ftp.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"
-
-# Full exchange code map (both files combined)
-EXCHANGE_MAP = {
-    # otherlisted.txt Exchange column
-    "A": "NYSE American (AMEX)",
-    "N": "NYSE",
-    "P": "NYSE Arca",
-    "Z": "CBOE BZX (BATS)",
-    "V": "IEX",
-    # nasdaqlisted.txt Market Category column
-    "Q": "NASDAQ Global Select Market",
-    "G": "NASDAQ Global Market",
-    "S": "NASDAQ Capital Market",
-}
-
-# ETF flags per file
-# nasdaqlisted:  ETF column = 'Y'
-# otherlisted:   ETF column = 'Y'  (same column name)
-
-OUTPUT_FILE = "all_us_tickers.csv"
-
-
-def _fetch(url: str) -> pd.DataFrame:
-    """Download pipe-delimited file over HTTPS, return raw DataFrame."""
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    # Last line is a file-creation timestamp — strip it before parsing
-    lines = resp.text.splitlines()
-    # Drop any line that starts with "File Creation Time" (the footer)
-    lines = [l for l in lines if not l.startswith("File Creation Time")]
-    content = "\n".join(lines)
-    return pd.read_csv(io.StringIO(content), sep="|", dtype=str)
-
-
-def get_nasdaq_listed() -> pd.DataFrame:
-    """Parse nasdaqlisted.txt → clean DataFrame."""
-    df = _fetch(NASDAQ_URL)
-
-    # Columns: Symbol | Security Name | Market Category | Test Issue |
-    #          Financial Status | Round Lot Size | ETF | NextShares
-    df = df[df["Test Issue"] == "N"]  # drop test issues
-    df = df[df["Symbol"].notna()]
-    df = df[~df["Symbol"].str.contains(r"\$|=|\^", na=False)]  # drop warrants/rights
-
-    df["exchange"] = df["Market Category"].map(EXCHANGE_MAP).fillna("NASDAQ")
-    df["type"] = df["ETF"].apply(lambda x: "ETF" if x == "Y" else "Stock")
-
-    return df[["Symbol", "Security Name", "exchange", "type"]].rename(
-        columns={
-            "Symbol": "ticker",
-            "Security Name": "name",
-        }
-    )
-
-
-def get_other_listed() -> pd.DataFrame:
-    """Parse otherlisted.txt → clean DataFrame."""
-    df = _fetch(OTHER_URL)
-
-    # Columns: ACT Symbol | Security Name | Exchange | CQS Symbol |
-    #          ETF | Round Lot Size | Test Issue | NASDAQ Symbol
-    df = df[df["Test Issue"] == "N"]
-    df = df[df["ACT Symbol"].notna()]
-    df = df[~df["ACT Symbol"].str.contains(r"\$|=|\^", na=False)]
-
-    df["exchange"] = df["Exchange"].map(EXCHANGE_MAP).fillna("Other")
-    df["type"] = df["ETF"].apply(lambda x: "ETF" if x == "Y" else "Stock")
-
-    return df[["ACT Symbol", "Security Name", "exchange", "type"]].rename(
-        columns={
-            "ACT Symbol": "ticker",
-            "Security Name": "name",
-        }
-    )
-
-
-def get_all_us_tickers() -> pd.DataFrame:
-    nasdaq = get_nasdaq_listed()
-    other = get_other_listed()
-
-    combined = pd.concat([nasdaq, other], ignore_index=True)
-
-    # Deduplicate — NASDAQ file is authoritative for NASDAQ tickers
-    combined = combined.drop_duplicates(subset=["ticker"], keep="first")
-
-    # Drop US-listed ETFs — EU users can only trade UCITS ETFs (Xetra/Euronext)
-    # Those are covered by the Frankfurt/Euronext scripts separately
-    combined = combined[combined["type"] == "Stock"]
-
-    # Remove clearly non-stock suffixes that slip through
-    # e.g. AAAA+ (rights), AAAAW (warrants), AAAAU (units)
-    mask = combined["ticker"].str.match(r"^[A-Z]{1,5}$")  # clean tickers only
-    combined = combined[mask]
-
-    for _exch, _cnt in combined["exchange"].value_counts().items():
-        pass
-    for _t, _cnt in combined["type"].value_counts().items():
-        pass
-
-    return combined
-
-
-def save(df: pd.DataFrame, filename: str = OUTPUT_FILE) -> str:
+def get_all_nasdaq_stocks():
+    """
+    Get ALL stocks from NASDAQ FTP server
+    This includes NASDAQ, NYSE, and AMEX exchanges
+    """
+    print("=" * 80)
+    print("METHOD 1: NASDAQ FTP SERVER (OFFICIAL SOURCE - ALL US STOCKS)")
+    print("=" * 80)
+    
     try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-    except NameError:
-        script_dir = os.getcwd()  # fallback for interactive/notebook use
-    path = os.path.join(script_dir, filename)
-    df.to_csv(path, index=False, encoding="utf-8")
-    # Sanity check
-    assert os.path.exists(path), "❌ File was not written!"
-    return path
+        # NASDAQ-listed stocks
+        print("\nDownloading NASDAQ-listed stocks...")
+        nasdaq_url = "ftp://ftp.nasdaqtrader.com/symboldirectory/nasdaqlisted.txt"
+        nasdaq_df = pd.read_csv(nasdaq_url, sep='|')
+        
+        # Filter out test issues and footer row
+        nasdaq_df = nasdaq_df[nasdaq_df['Test Issue'] == 'N']
+        nasdaq_df = nasdaq_df[nasdaq_df['Symbol'].notna()]
+        nasdaq_df = nasdaq_df[nasdaq_df['Symbol'] != 'Symbol']  # Remove footer
+        
+        print(f"Found {len(nasdaq_df)} NASDAQ stocks")
+        
+        # NYSE and other exchange stocks
+        print("\nDownloading NYSE and other exchange stocks...")
+        other_url = "ftp://ftp.nasdaqtrader.com/symboldirectory/otherlisted.txt"
+        other_df = pd.read_csv(other_url, sep='|')
+        
+        # Filter out test issues and footer row
+        other_df = other_df[other_df['Test Issue'] == 'N']
+        other_df = other_df[other_df['ACT Symbol'].notna()]
+        other_df = other_df[other_df['ACT Symbol'] != 'ACT Symbol']  # Remove footer
+        
+        print(f"Found {len(other_df)} NYSE/AMEX/etc stocks")
+        
+        # Process NASDAQ stocks
+        nasdaq_stocks = []
+        for _, row in nasdaq_df.iterrows():
+            nasdaq_stocks.append({
+                'ticker': row['Symbol'],
+                'name': row['Security Name'],
+                'exchange': 'NASDAQ'
+            })
+        
+        # Process other stocks
+        other_stocks = []
+        for _, row in other_df.iterrows():
+            exchange_map = {
+                'N': 'NYSE',
+                'A': 'NYSE American (AMEX)',
+                'P': 'NYSE Arca',
+                'Z': 'BATS',
+                'V': 'IEX'
+            }
+            exchange_code = row.get('Exchange', 'N')
+            exchange = exchange_map.get(exchange_code, f'Exchange {exchange_code}')
+            
+            other_stocks.append({
+                'ticker': row['ACT Symbol'],
+                'name': row['Security Name'],
+                'exchange': exchange
+            })
+        
+        # Combine all stocks
+        all_stocks = nasdaq_stocks + other_stocks
+        df_all = pd.DataFrame(all_stocks)
+        
+        print(f"\n{'='*80}")
+        print(f"TOTAL US STOCKS: {len(df_all)}")
+        print(f"{'='*80}\n")
+        
+        # Exchange breakdown
+        print(f"\n{'='*80}")
+        print("BREAKDOWN BY EXCHANGE:")
+        print(f"{'='*80}")
+        exchange_counts = df_all['exchange'].value_counts()
+        for exchange, count in exchange_counts.items():
+            print(f"{exchange:30} {count:5} stocks")
+        
+        return df_all
+        
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
+def get_stocks_with_yfinance_info(df, sample_size=5):
+    """Get detailed exchange info from yfinance for a sample"""
+    print(f"\n{'='*80}")
+    print(f"GETTING DETAILED INFO FOR {sample_size} SAMPLE STOCKS USING YFINANCE")
+    print(f"{'='*80}\n")
+    
+    sample_df = df.head(sample_size)
+    
+    for _, row in sample_df.iterrows():
+        ticker = row['ticker']
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
+            
+            symbol = info.get('symbol', ticker)
+            exchange = info.get('exchange', 'N/A')
+            name = info.get('longName', info.get('shortName', row['name']))
+            
+            print(f"Ticker: {symbol}")
+            print(f"Exchange (from NASDAQ FTP): {row['exchange']}")
+            print(f"Exchange (from yfinance): {exchange}")
+            print(f"Name: {name}")
+            print("-" * 80)
+            
+            time.sleep(0.5)  # Rate limiting
+            
+        except Exception as e:
+            print(f"Error fetching {ticker}: {e}")
+            print("-" * 80)
+
+def save_to_file(df, filename='all_us_stocks.csv'):
+    """Save all stocks to a CSV file"""
+    try:
+        import os
+        # Get the directory where the script is located
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        output_path = os.path.join(script_dir, filename)
+        df.to_csv(output_path, index=False)
+        print(f"\n{'='*80}")
+        print(f"✅ SAVED ALL {len(df)} STOCKS TO: {output_path}")
+        print(f"{'='*80}")
+        return output_path
+    except Exception as e:
+        print(f"Error saving file: {e}")
+        return None
 
 if __name__ == "__main__":
-    df = get_all_us_tickers()
-    if df is not None and not df.empty:
-        save(df)
+    
+    # Get ALL US stocks from NASDAQ FTP
+    all_stocks_df = get_all_nasdaq_stocks()
+    
+    if all_stocks_df is not None:
+        
+        # Save to CSV
+        save_to_file(all_stocks_df)
+        
+        print("\n" + "=" * 80)
+        print("SUMMARY")
+        print("=" * 80)
+        print("\n✅ This script downloaded ALL US stocks from the official NASDAQ FTP server")
+        print(f"✅ Total stocks: {len(all_stocks_df)}")
+        print("✅ Includes: NASDAQ, NYSE, NYSE American (AMEX), NYSE Arca, BATS, IEX")
+        print("✅ Data is updated daily by NASDAQ")
+        print("\n💡 You now have ticker + exchange for ALL US stocks!")
+        print("💡 The CSV file contains all stocks and can be filtered/processed as needed")
+    else:
+        print("\n❌ Failed to download stock data")
+        print("\nAlternative methods:")
+        print("1. Use pytickersymbols library: pip install pytickersymbols")
+        print("2. Use SEC EDGAR API: https://www.sec.gov/edgar/sec-api-documentation")
+        print("3. Use yahoo-ticker-downloader (downloads ALL tickers, takes time)")

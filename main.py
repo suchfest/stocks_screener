@@ -1,4 +1,4 @@
-from config.logic import (
+from logic import (
     csv_import,
     csv_output,
     filtered,
@@ -6,7 +6,7 @@ from config.logic import (
 )
 
 
-df = csv_import("inputs/DE_stocks.csv")
+df = csv_import("inputs/all_us_stocks.csv")
 fetch = worker(df)
-filter = filtered(fetch)
-output = csv_output(filter, "outputs/rsi.csv")
+filtered_df = filtered(fetch)
+output = csv_output(filtered_df, "outputs/rsi.csv")
