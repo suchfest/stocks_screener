@@ -11,8 +11,8 @@ def calculate_rsi(source, length=rsi_len):
     initial_loss = loss.rolling(window=length).mean()
 
     # 2. Calculate Wilder's Smoothing (RMA)
-    gain_rma = gain.ewm(alpha=1/length, adjust=False).mean()
-    loss_rma = loss.ewm(alpha=1/length, adjust=False).mean()
+    gain_rma = gain.ewm(alpha=1 / length, adjust=False).mean()
+    loss_rma = loss.ewm(alpha=1 / length, adjust=False).mean()
 
     # 3. Replace the early values with the initial SMA
     # This aligns the start of your data with TradingView's logic

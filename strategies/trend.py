@@ -3,6 +3,7 @@ import pandas_ta as ta
 from indicators.ema import calculate_ema_atr
 from indicators.rsi import calculate_rsi, rsi_len
 
+
 def pro_confluence_strategy(
     df,
     rsi_window=rsi_len,
@@ -15,7 +16,7 @@ def pro_confluence_strategy(
     df = calculate_ema_atr(df)
 
     # "Fresh Trend" Logic: Bullish today, but was False at least once in the previous X candles
-    is_bull_now = df["emaBull"] == True
+    is_bull_now = df["emaBull"] is True
     # If the minimum value in the last X shifted candles is 0 (False), it wasn't bullish the whole time
     was_false_recently = (
         df["emaBull"].shift(1).rolling(window=trend_grace_period).min() == 0

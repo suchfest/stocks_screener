@@ -1,5 +1,4 @@
 import pandas as pd
-
 from config.indicators import calculate_rsi
 
 
