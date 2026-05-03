@@ -3,7 +3,6 @@ ema_long_len = 200
 
 
 def calculate_sma(series, length=sma_long_len):
-    """Simple moving average (arithmetic mean over ``length`` closes)."""
     return series.rolling(window=length, min_periods=50).mean()
 
 
