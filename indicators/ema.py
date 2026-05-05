@@ -1,6 +1,3 @@
-import pandas_ta as ta
-
-
 ema_fast_len = 30
 ema_slow_len = 60
 ema_margin_atr_len = 60
@@ -14,15 +11,10 @@ def calculate_ema_atr(
     emaMarginATRLen=ema_margin_atr_len,
     emaMarginATRMult=ema_margin_atr_mult,
 ):
-    df["emaFast"] = ta.ema(df["close"], length=emaFastLen)
-    df["emaSlow"] = ta.ema(df["close"], length=emaSlowLen)
+    df["emaFast"] = df.ta.ema(length=emaFastLen)
+    df["emaSlow"] = df.ta.ema(length=emaSlowLen)
     df["emaDiff"] = df["emaFast"] - df["emaSlow"]
-    df["atr"] = ta.atr(
-        high=df["high"],
-        low=df["low"],
-        close=df["close"],
-        length=emaMarginATRLen,
-    )
+    df["atr"] = df.ta.atr(length=emaMarginATRLen)
     df["emaBull"] = df["emaDiff"] > emaMarginATRMult * df["atr"]
     df["emaBear"] = df["emaDiff"] < -emaMarginATRMult * df["atr"]
     df["emaNeutral"] = ~(df["emaBull"] | df["emaBear"])

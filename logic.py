@@ -4,7 +4,7 @@ import pandas as pd
 import yfinance as yf
 from tqdm import tqdm
 
-from indicators.rsi import calculate_rsi
+from strategies.dip import strategy_dip
 
 
 # CSV handling
@@ -15,26 +15,23 @@ def csv_import(path):
 
 
 def csv_output(results, path):
+    if not results:
+        return
     df = pd.DataFrame(results)
-    if "ticker" not in df.columns or "rsi" not in df.columns:
+    if "ticker" not in df.columns:
         raise ValueError
-    else:
-        return df.to_csv(path, index=False)
+    return df.to_csv(path, index=False)
 
 
 # data handling
 
 
 def valid_data(rows):
-    if len(rows) < 14:
-        return False
-    return True
+    return len(rows) >= 50
 
 
 def rsi_filter(value):
-    if value <= 30:
-        return True
-    return False
+    return value <= 30
 
 
 def filtered(results):
@@ -46,26 +43,25 @@ def filtered(results):
     return filtered
 
 
-# ticker fetcher
+# ticker fetcher for dip_strategy
 
 
-def fetch_price(ticker):
+def fetch_dip(ticker):
     stock = yf.Ticker(ticker)
-    history = stock.history(period="3mo", interval="1d")  # for daily RSI
-    df = history["Close"]
-    return df
+    history = stock.history(period="3mo", interval="1d")  # for daily
+    return history
 
 
-# get ticker price
-
-
-def fetcher(ticker):
-    prices = fetch_price(ticker)
+def fetcher_dip(ticker):
+    prices = fetch_dip(ticker)
     if not valid_data(prices):
         return None
-    rsi = calculate_rsi(prices)
-    last = rsi.iloc[-1]
-    return {"ticker": ticker, "rsi": float(last)}
+
+    buy = strategy_dip(prices["Close"], prices["Low"])
+    if not buy:
+        return None
+
+    return {"ticker": ticker}
 
 
 # multiple workers to iterate
@@ -73,6 +69,6 @@ def fetcher(ticker):
 
 def worker(df):
     tickers = df["ticker"].tolist()
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        results = list(tqdm(executor.map(fetcher, tickers), total=len(tickers)))
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(tqdm(executor.map(fetcher_dip, tickers), total=len(tickers)))
     return [r for r in results if r is not None]

@@ -6,7 +6,7 @@ from logic import (
 )
 
 
-df = csv_import("inputs/all_us_stocks.csv")
+df = csv_import("inputs/FR_stocks.csv")
 fetch = worker(df)
 filtered_df = filtered(fetch)
-output = csv_output(filtered_df, "outputs/rsi.csv")
+output = csv_output(filtered_df, "outputs/dip.csv")

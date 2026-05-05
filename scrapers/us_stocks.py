@@ -20,7 +20,6 @@ def get_all_nasdaq_stocks():
         nasdaq_df = nasdaq_df[nasdaq_df["Symbol"].notna()]
         nasdaq_df = nasdaq_df[nasdaq_df["Symbol"] != "Symbol"]  # Remove footer
 
-
         # NYSE and other exchange stocks
         other_url = "ftp://ftp.nasdaqtrader.com/symboldirectory/otherlisted.txt"
         other_df = pd.read_csv(other_url, sep="|")
@@ -29,7 +28,6 @@ def get_all_nasdaq_stocks():
         other_df = other_df[other_df["Test Issue"] == "N"]
         other_df = other_df[other_df["ACT Symbol"].notna()]
         other_df = other_df[other_df["ACT Symbol"] != "ACT Symbol"]  # Remove footer
-
 
         # Process NASDAQ stocks
         nasdaq_stocks = []
@@ -67,11 +65,10 @@ def get_all_nasdaq_stocks():
         all_stocks = nasdaq_stocks + other_stocks
         df_all = pd.DataFrame(all_stocks)
 
-
         # Exchange breakdown
-        exchange_counts = df_all["exchange"].value_counts()
-        for exchange, _count in exchange_counts.items():
-            pass
+        # exchange_counts = df_all["exchange"].value_counts()
+        # for exchange, _count in exchange_counts.items():
+        #    pass
 
         return df_all
 
@@ -93,7 +90,6 @@ def get_stocks_with_yfinance_info(df, sample_size=5):
             info.get("symbol", ticker)
             info.get("exchange", "N/A")
             info.get("longName", info.get("shortName", row["name"]))
-
 
             time.sleep(0.5)  # Rate limiting
 
