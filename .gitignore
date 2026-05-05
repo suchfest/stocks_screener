@@ -216,9 +216,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-stocks_checker/
-
-# Datadog (or similar) bulk monitor exports — large, environment-specific, do not commit
-all_monitors.json
 
 *.pyc
+
+outputs/

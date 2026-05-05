@@ -9,7 +9,10 @@ sma_slow_len = 50
 rsi_max = 31.0
 
 
-def strategy_dip(close, low):
+def strategy_dip(df):
+    close = df["Close"]
+    low = df["Low"]
+
     min_len = max(sma_long_len, sma_slow_len, bb_len, 20) + 1
     if len(close) < min_len:
         return None
@@ -29,4 +32,5 @@ def strategy_dip(close, low):
     if sma50 == 0:
         return None
 
-    return (c > sma200) and (rsi < rsi_max) and (lo < bb_lower)
+    is_buy_dip = (c > sma200) and (rsi < rsi_max) and (lo < bb_lower)
+    return is_buy_dip
