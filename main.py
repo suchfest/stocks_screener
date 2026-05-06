@@ -1,65 +1,59 @@
-import os
 
-from csv_logic import csv_import, csv_output
-from workers import worker_dip, worker_rsi_sma, worker_trend
+from csv_logic import csv_import, csv_output, select_file
+from fetchers import fetcher_dip, fetcher_rsi_sma, fetcher_trend
+from workers import run_with_workers
 
-
-# --- NEW: Function to let the user pick a file ---
-def select_file():
-    # 1. Look inside the 'inputs' folder and get all files
-    folder_path = "inputs"
-    files = os.listdir(folder_path)
-
-    # 2. Show the user the files as a numbered list
-    for _index, _file_name in enumerate(files):
-        pass
-
-    # 3. Ask them to pick a number
-    file_choice = input(f"Select a file (1-{len(files)}): ")
-
-    # 4. Figure out which file they picked and return the full path
-    # (Subtract 1 because Python lists start counting at 0)
-    selected_file_name = files[int(file_choice) - 1]
-    full_path = f"{folder_path}/{selected_file_name}"
-
-    return full_path
-
-
-# -------------------------------------------------
 
 # 1. Show the Strategy Menu
-
-choice = input("Type 1, 2, or 3 and press Enter: ")
-
+choice = input(
+    "strategy picker: \n Type 1 for Dip, \n Type 2 for Trend, \n Type 3 for RSI SMA \n and press Enter: "
+)
 # 2. Route to the correct strategy
 if choice == "1":
-    # Call our new file menu!
     # It will pause, ask for a file, and save the path here:
     target_file = select_file()
 
+    worker_count = int(input("Enter the number of workers (1-10): "))
+    if not (0 < worker_count <= 10):
+        raise ValueError("Worker count must be between 0 and 10")
     # Use the chosen file instead of the hardcoded one
     df = csv_import(target_file)
-    fetch = worker_dip(df)
+    tickers = df["ticker"].tolist()
+    fetch = run_with_workers(
+        task_function=fetcher_dip, items_to_process=tickers, num_workers=worker_count
+    )
     csv_output(fetch, "outputs/dip.csv")
 
 elif choice == "2":
-    # Call our new file menu!
     # It will pause, ask for a file, and save the path here:
     target_file = select_file()
-
+    # Use the chosen file instead of the hardcoded one
+    worker_count = int(input("Enter the number of workers (1-10): "))
+    if not (0 < worker_count <= 10):
+        raise ValueError("Worker count must be between 0 and 10")
     # Use the chosen file instead of the hardcoded one
     df = csv_import(target_file)
-    fetch = worker_trend(df)
+    tickers = df["ticker"].tolist()
+    fetch = run_with_workers(
+        task_function=fetcher_trend, items_to_process=tickers, num_workers=worker_count
+    )
     csv_output(fetch, "outputs/trend.csv")
 
 elif choice == "3":
-    # Call our new file menu!
     # It will pause, ask for a file, and save the path here:
     target_file = select_file()
-
+    # Use the chosen file instead of the hardcoded one
+    worker_count = int(input("Enter the number of workers (1-10): "))
+    if not (0 < worker_count <= 10):
+        raise ValueError("Worker count must be between 0 and 10")
     # Use the chosen file instead of the hardcoded one
     df = csv_import(target_file)
-    fetch = worker_rsi_sma(df)
+    tickers = df["ticker"].tolist()
+    fetch = run_with_workers(
+        task_function=fetcher_rsi_sma,
+        items_to_process=tickers,
+        num_workers=worker_count,
+    )
     csv_output(fetch, "outputs/rsi_sma.csv")
 
 else:

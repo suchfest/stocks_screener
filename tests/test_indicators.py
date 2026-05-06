@@ -1,5 +1,6 @@
 import pandas as pd
-from config.indicators import calculate_rsi
+
+from indicators.rsi import calculate_rsi
 
 
 def test_calculate_rsi():

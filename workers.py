@@ -2,25 +2,23 @@ from concurrent.futures import ThreadPoolExecutor
 
 from tqdm import tqdm
 
-from fetchers import fetcher_dip, fetcher_rsi_sma, fetcher_trend
+
+def run_with_workers(task_function, items_to_process, num_workers):
+    """
+    Executes a task function concurrently using a specified number of workers.
+    """
+    if num_workers <= 0:
+        raise ValueError("Number of workers must be a positive integer.")
 
 
-def worker_dip(df):
-    tickers = df["ticker"].tolist()
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        results = list(tqdm(executor.map(fetcher_dip, tickers), total=len(tickers)))
-    return [r for r in results if r is not None]
+    with ThreadPoolExecutor(max_workers=num_workers) as executor:
+        results = list(
+            tqdm(
+                executor.map(task_function, items_to_process),
+                total=len(items_to_process),
+            )
+        )
 
+    successful_results = [result for result in results if result is not None]
 
-def worker_trend(df):
-    tickers = df["ticker"].tolist()
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        results = list(tqdm(executor.map(fetcher_trend, tickers), total=len(tickers)))
-    return [r for r in results if r is not None]
-
-
-def worker_rsi_sma(df):
-    tickers = df["ticker"].tolist()
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        results = list(tqdm(executor.map(fetcher_rsi_sma, tickers), total=len(tickers)))
-    return [r for r in results if r is not None]
+    return successful_results

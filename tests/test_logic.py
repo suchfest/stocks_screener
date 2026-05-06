@@ -3,20 +3,15 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
-from config.logic import (
-    csv_import,
-    csv_output,
-    fetch_price,
-    fetcher,
-    filtered,
-    rsi_filter,
-    valid_data,
-    worker,
-)
+
+from csv_logic import csv_import, csv_output
+from fetchers import fetch_price, fetcher, valid_data  # type: ignore # FIX ME
+from indicators.rsi import rsi_filter  # type: ignore # FIX ME
+from workers import worker  # type: ignore # FIX ME
 
 
 def test_csv_imports():
-    path = csv_import("inputs/fake.csv")
+    path = csv_import("tests/fake.csv")
     assert len(path) == 3
 
 
@@ -148,5 +143,5 @@ def test_worker_thread_config(
 
 def test_filtered():
     df = [{"ticker": "test1", "rsi": 45.2}, {"ticker": "test2", "rsi": 28.1}]
-    result = filtered(df)
+    result = rsi_filter(df)
     assert result[0]["ticker"] == "test2"

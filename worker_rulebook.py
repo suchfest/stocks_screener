@@ -3,7 +3,7 @@ import os
 from csv_logic import csv_import, csv_output
 
 # Import your workers
-from workers import worker_dip
+from workers import worker_dip  # type: ignore # FIX ME
 
 
 # from workers import worker_spike

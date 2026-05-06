@@ -4,7 +4,8 @@ run this and check the RSI value. Compare it to the tool you personally use
 """
 
 import yfinance as yf
-from config.indicators import calculate_rsi
+
+from indicators.rsi import calculate_rsi
 
 
 ticker = yf.Ticker("MSFT")
