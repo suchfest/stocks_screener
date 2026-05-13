@@ -9,11 +9,12 @@ def csv_import(path):
 
 def csv_output(results, path):
     if not results:
-        return
+        return False
     df = pd.DataFrame(results)
     if "ticker" not in df.columns:
         raise ValueError
-    return df.to_csv(path, index=False)
+    df.to_csv(path, index=False)
+    return True
 
 
 def select_file():
@@ -23,15 +24,27 @@ def select_file():
 
     # 2. Show the files as a numbered list
     for _index, _file_name in enumerate(files):
-        # THIS IS THE FIX: Print the index (plus 1) and the file name
         pass
 
-    # 3. Ask to pick a number
-    file_choice = input(f"Select a file (1-{len(files)}): ")
+    file_choice = int(input(f"Select a file (1-{len(files)}): "))
 
-    # 4. Figure out which file they picked and return the full path
-    # (Subtract 1 because Python lists start counting at 0)
     selected_file_name = files[int(file_choice) - 1]
     full_path = f"{folder_path}/{selected_file_name}"
 
     return full_path
+
+
+def process_and_save_results(results, target_file, strategy_name, tf_string):
+    """Filters None values, generates the filename, saves the CSV, and prints a summary."""
+    valid_results = [r for r in results if r is not None]
+
+    # Extract base filename
+    base_filename = os.path.splitext(os.path.basename(target_file))[0]
+
+    # Construct output path
+    output_path = f"outputs/{base_filename}_{strategy_name}_{tf_string}.csv"
+
+    if valid_results:
+        csv_output(valid_results, output_path)
+    else:
+        pass

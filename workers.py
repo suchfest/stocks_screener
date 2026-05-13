@@ -10,7 +10,6 @@ def run_with_workers(task_function, items_to_process, num_workers):
     if num_workers <= 0:
         raise ValueError("Number of workers must be a positive integer.")
 
-
     with ThreadPoolExecutor(max_workers=num_workers) as executor:
         results = list(
             tqdm(

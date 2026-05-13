@@ -1,3 +1,5 @@
+import pandas_ta as ta
+
 from indicators.ema import calculate_ema_atr
 from indicators.rsi import calculate_rsi, rsi_len
 
@@ -22,17 +24,22 @@ def strategy_trend(df):
     rsi = calculate_rsi(df["Close"], length=rsi_len)
     rsi_not_overbought = rsi < 60
 
-    # 3 volume
-    obv = df.ta.obv()
+    # 3 volume (Series has no .ta accessor; use functional API)
+    obv = ta.obv(df["Close"], df["Volume"])
     if obv is None:
         return False
-    obv_sma = obv.ta.sma(length=obv_sma_len)
+    obv_sma = ta.sma(obv, length=obv_sma_len)
     if obv_sma is None:
         return False
     volume_confirmed = obv > obv_sma
 
     # 4 donchian
-    dc = df.ta.donchian(lower_length=structure_len, upper_length=structure_len)
+    dc = ta.donchian(
+        df["High"],
+        df["Low"],
+        lower_length=structure_len,
+        upper_length=structure_len,
+    )
     if dc is None:
         return False
     mid_point = (dc.iloc[:, 2] + dc.iloc[:, 0]) / 2

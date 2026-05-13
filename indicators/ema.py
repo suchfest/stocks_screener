@@ -1,3 +1,6 @@
+import pandas_ta as ta  # noqa: F401 - registers DataFrame.ta accessor for downstream code.
+
+
 ema_fast_len = 30
 ema_slow_len = 60
 ema_margin_atr_len = 60

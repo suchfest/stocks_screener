@@ -9,14 +9,23 @@ def valid_data(rows):
     return len(rows) >= 200
 
 
-def fetch_data(ticker):
+# 1. Create a unified fetch_data function
+def fetch_data(ticker, timeframe="1d"):
     stock = yf.Ticker(ticker)
-    history = stock.history(period="1y", interval="1d")  # for daily
-    return history
+
+    if timeframe == "1h":
+        return stock.history(period="3m", interval="1h")
+    elif timeframe == "4h":
+        return stock.history(period="1y", interval="4h")
+    elif timeframe == "1d":
+        return stock.history(period="1y", interval="1d")
+    else:
+        raise ValueError("Invalid timeframe. Choose '1h', '4h', or '1d'.")
 
 
-def fetcher_dip(ticker):
-    prices = fetch_data(ticker)
+# 2. Update fetchers to accept the timeframe parameter
+def fetcher_dip(ticker, timeframe="1d"):
+    prices = fetch_data(ticker, timeframe)
     if not valid_data(prices):
         return None
 
@@ -24,11 +33,11 @@ def fetcher_dip(ticker):
     if not buy_dip:
         return None
 
-    return {"ticker": ticker}
+    return {"ticker": ticker, "timeframe": timeframe}
 
 
-def fetcher_trend(ticker):
-    prices = fetch_data(ticker)
+def fetcher_trend(ticker, timeframe="1d"):
+    prices = fetch_data(ticker, timeframe)
     if not valid_data(prices):
         return None
 
@@ -36,15 +45,16 @@ def fetcher_trend(ticker):
     if not buy_trend:
         return None
 
-    return {"ticker": ticker}
+    return {"ticker": ticker, "timeframe": timeframe}
 
 
-def fetcher_rsi_sma(ticker):
-    prices = fetch_data(ticker)
+def fetcher_rsi_sma(ticker, timeframe="1d"):
+    prices = fetch_data(ticker, timeframe)
     if not valid_data(prices):
         return None
+
     buy_rsi_sma = strategy_rsi_sma(prices)
     if not buy_rsi_sma:
         return None
 
-    return {"ticker": ticker}
+    return {"ticker": ticker, "timeframe": timeframe}

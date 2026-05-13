@@ -97,7 +97,7 @@ def get_stocks_with_yfinance_info(df, sample_size=5):
             pass
 
 
-def save_to_file(df, filename="all_us_stocks.csv"):
+def save_to_file(df, filename="inputs/all_us_stocks.csv"):
     """Save all stocks to a CSV file"""
     try:
         import os
