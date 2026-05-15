@@ -12,7 +12,6 @@ def get_wikipedia_list(url, index_name):
     try:
         resp = requests.get(url, headers=headers)
         tables = pd.read_html(io.StringIO(resp.text))
-        # Usually the first or second table
         df = next(t for t in tables if any(c in t.columns for c in ["EPIC", "Ticker"]))
 
         ticker_col = "EPIC" if "EPIC" in df.columns else "Ticker"

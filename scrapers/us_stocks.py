@@ -76,29 +76,8 @@ def get_all_nasdaq_stocks():
         return None
 
 
-def get_stocks_with_yfinance_info(df, sample_size=5):
-    """Get detailed exchange info from yfinance for a sample"""
 
-    sample_df = df.head(sample_size)
-
-    for _, row in sample_df.iterrows():
-        ticker = row["ticker"]
-        try:
-            stock = yf.Ticker(ticker)
-            info = stock.info
-
-            info.get("symbol", ticker)
-            info.get("exchange", "N/A")
-            info.get("longName", info.get("shortName", row["name"]))
-
-            time.sleep(0.5)  # Rate limiting
-
-        except Exception:
-            pass
-
-
-def save_to_file(df, filename="inputs/all_us_stocks.csv"):
-    """Save all stocks to a CSV file"""
+def save_to_file(df, filename="inputs/us_stocks.csv"):
     try:
         import os
 

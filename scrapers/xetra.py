@@ -4,7 +4,7 @@ import pandas as pd
 import requests  # type: ignore[import-untyped] # FIX ME
 
 
-OUTPUT_FILE = "inputs/xetra_list.csv"
+OUTPUT_FILE = "inputs/de_stocks.csv"
 
 
 def get_wikipedia_list(url, index_name, suffix=".DE"):
