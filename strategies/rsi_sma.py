@@ -1,3 +1,5 @@
+# this strategy is only < rsi 30 + > sma200
+
 from indicators.ma import calculate_sma
 from indicators.rsi import calculate_rsi
 

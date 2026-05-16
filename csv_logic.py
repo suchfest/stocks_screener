@@ -24,7 +24,7 @@ def select_file():
 
     # 2. Show the files as a numbered list
     for _index, _file_name in enumerate(files):
-        print(f"{_index + 1}. {_file_name}")
+        pass
 
     file_choice = int(input(f"Select a file (1-{len(files)}): "))
 

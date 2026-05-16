@@ -1,0 +1,92 @@
+import pandas as pd
+
+
+def get_all_nasdaq_stocks():
+    """
+    Get ALL stocks from NASDAQ FTP server
+    This includes NASDAQ, NYSE, and AMEX exchanges
+    """
+
+    try:
+        # NASDAQ-listed stocks
+        nasdaq_url = "ftp://ftp.nasdaqtrader.com/symboldirectory/nasdaqlisted.txt"
+        nasdaq_df = pd.read_csv(nasdaq_url, sep="|")
+
+        # Filter out test issues and footer row
+        nasdaq_df = nasdaq_df[nasdaq_df["Test Issue"] == "N"]
+        nasdaq_df = nasdaq_df[nasdaq_df["Symbol"].notna()]
+        nasdaq_df = nasdaq_df[nasdaq_df["Symbol"] != "Symbol"]  # Remove footer
+
+        # NYSE and other exchange stocks
+        other_url = "ftp://ftp.nasdaqtrader.com/symboldirectory/otherlisted.txt"
+        other_df = pd.read_csv(other_url, sep="|")
+
+        # Filter out test issues and footer row
+        other_df = other_df[other_df["Test Issue"] == "N"]
+        other_df = other_df[other_df["ACT Symbol"].notna()]
+        other_df = other_df[other_df["ACT Symbol"] != "ACT Symbol"]  # Remove footer
+
+        # Process NASDAQ stocks
+        nasdaq_stocks = []
+        for _, row in nasdaq_df.iterrows():
+            nasdaq_stocks.append(
+                {
+                    "ticker": row["Symbol"],
+                    "name": row["Security Name"],
+                    "exchange": "NASDAQ",
+                }
+            )
+
+        # Process other stocks
+        other_stocks = []
+        for _, row in other_df.iterrows():
+            exchange_map = {
+                "N": "NYSE",
+                "A": "NYSE American (AMEX)",
+                "P": "NYSE Arca",
+                "Z": "BATS",
+                "V": "IEX",
+            }
+            exchange_code = row.get("Exchange", "N")
+            exchange = exchange_map.get(exchange_code, f"Exchange {exchange_code}")
+
+            other_stocks.append(
+                {
+                    "ticker": row["ACT Symbol"],
+                    "name": row["Security Name"],
+                    "exchange": exchange,
+                }
+            )
+
+        # Combine all stocks
+        all_stocks = nasdaq_stocks + other_stocks
+        df_all = pd.DataFrame(all_stocks)
+
+        # Exchange breakdown
+        # exchange_counts = df_all["exchange"].value_counts()
+        # for exchange, _count in exchange_counts.items():
+        #    pass
+
+        return df_all
+
+    except Exception:
+        return None
+
+
+def save_to_file(df, filename="inputs/us_stocks.csv"):
+    try:
+        df.to_csv(filename, index=False)
+        return filename
+    except Exception:
+        return None
+
+
+if __name__ == "__main__":
+    all_stocks_df = get_all_nasdaq_stocks()
+
+    if all_stocks_df is not None:
+        output = save_to_file(all_stocks_df)
+        if output:
+            pass
+    else:
+        pass

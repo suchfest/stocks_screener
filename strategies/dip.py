@@ -1,3 +1,5 @@
+# this strategy is only < rsi 30 + > sma200 + bollinger bands touch lower
+
 import pandas as pd
 
 from indicators.bb import bb_len, calculate_bollinger_bands

@@ -4,7 +4,6 @@ this file requires you to download the raw csvs from XETRA website and save them
 
 import pandas as pd
 import country_converter as coco
-import os
 
 
 output_file = "inputs/xetra_stocks.csv"
