@@ -1,5 +1,5 @@
 import os
-
+from pathlib import Path
 import pandas as pd
 
 
@@ -18,24 +18,24 @@ def csv_output(results, path):
 
 
 def select_file():
-    # 1. Look inside the 'inputs' folder and get all files
-    folder_path = "inputs"
-    files = os.listdir(folder_path)
+    inputs_path = Path("inputs")
+    # all files
+    files = [x for x in inputs_path.iterdir() if x.is_file()]
 
-    # 2. Show the files as a numbered list
-    for _index, _file_name in enumerate(files):
-        pass
-
+    # show the files as a numbered list
+    print("\nAvailable files:")
+    for index, file_obj in enumerate(files, start=1):
+        print(f"{index}. {file_obj.name}")
+    
     file_choice = int(input(f"Select a file (1-{len(files)}): "))
-
-    selected_file_name = files[int(file_choice) - 1]
-    full_path = f"{folder_path}/{selected_file_name}"
-
-    return full_path
-
+    
+    # get the selected file path object
+    selected_file = files[file_choice - 1]
+    
+    # return it as a str
+    return str(selected_file)
 
 def process_and_save_results(results, target_file, strategy_name, tf_string):
-    """Filters None values, generates the filename, saves the CSV, and prints a summary."""
     valid_results = [r for r in results if r is not None]
 
     # Extract base filename
