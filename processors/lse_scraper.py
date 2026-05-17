@@ -1,36 +1,52 @@
 import io
-
+import os
 import pandas as pd
-import requests  # type: ignore[import-untyped] # FIX ME
-
+import requests  # type: ignore[import-untyped]
 
 output_file = "inputs/lse.csv"
-
 
 def get_wikipedia_list(url, index_name):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
         resp = requests.get(url, headers=headers)
         tables = pd.read_html(io.StringIO(resp.text))
-        df = next(t for t in tables if any(c in t.columns for c in ["EPIC", "Ticker"]))
+        
+        # Find the correct table by converting columns to lowercase
+        df = None
+        for t in tables:
+            # Create a list of lowercase columns for comparison
+            lowercased_cols = [str(c).lower() for c in t.columns]
+            if "epic" in lowercased_cols or "ticker" in lowercased_cols:
+                df = t
+                break
+                
+        if df is None:
+            print(f"Could not find a valid table for {index_name}")
+            return []
 
-        ticker_col = "EPIC" if "EPIC" in df.columns else "Ticker"
-        name_col = next(c for c in df.columns if c in ["Company", "Constituent"])
+        # Find the specific ticker and name column dynamically
+        ticker_col = next(c for c in df.columns if str(c).lower() in ["epic", "ticker"])
+        name_col = next(c for c in df.columns if str(c).lower() in ["company", "constituent"])
 
         data = []
         for _, row in df.iterrows():
+            ticker_val = str(row[ticker_col]).strip()
+            
+            # Skip any header-like rows or empty tickers if Wikipedia has them
+            if not ticker_val or ticker_val.lower() in ["epic", "ticker"]:
+                continue
+                
             data.append(
                 {
-                    "Ticker": f"{str(row[ticker_col]).strip()}.L",
+                    "ticker": f"{ticker_val}.L",
                     "Name": row[name_col],
-                    "Index": index_name,
-                    "Type": "Stock",
                 }
             )
         return data
-    except Exception:
+    except Exception as e:
+        # Crucial for debugging: tell us WHAT went wrong instead of hiding it
+        print(f"Error fetching {index_name}: {e}")
         return []
-
 
 def main():
     f100 = get_wikipedia_list(
@@ -45,11 +61,9 @@ def main():
     if all_data:
         df = pd.DataFrame(all_data)
         df.to_csv(output_file, index=False)
+        print(f"Successfully saved {len(df)} rows to {output_file}")
     else:
-        pass
-
+        print("No data was collected. File not saved.")
 
 if __name__ == "__main__":
     main()
-
-print("done")

@@ -1,17 +1,26 @@
+import random
+import time
+from curl_cffi import requests # yahoo requirment
 import yfinance as yf
 
 from strategies.dip import strategy_dip
 from strategies.rsi_sma import strategy_rsi_sma
 from strategies.trend import strategy_trend
 
+# exactly what yahoo expects
+shared_session = requests.Session(impersonate="chrome")
+
 
 def valid_data(rows):
     return len(rows) >= 200
 
 
-# 1. Create a unified fetch_data function
 def fetch_data(ticker, timeframe="1d"):
-    stock = yf.Ticker(ticker)
+   # needed to seem like a human
+    time.sleep(random.uniform(0.4, 1.2))
+
+    # pass the specialized curl_cffi session
+    stock = yf.Ticker(ticker, session=shared_session)
 
     if timeframe == "1h":
         return stock.history(period="3m", interval="1h")
@@ -23,7 +32,6 @@ def fetch_data(ticker, timeframe="1d"):
         raise ValueError("Invalid timeframe. Choose '1h', '4h', or '1d'.")
 
 
-# 2. Update fetchers to accept the timeframe parameter
 def fetcher_dip(ticker, timeframe="1d"):
     prices = fetch_data(ticker, timeframe)
     if not valid_data(prices):
@@ -57,4 +65,4 @@ def fetcher_rsi_sma(ticker, timeframe="1d"):
     if not buy_rsi_sma:
         return None
 
-    return {"ticker": ticker, "timeframe": timeframe}
+    return {"ticker": ticker}
