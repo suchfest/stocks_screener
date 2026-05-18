@@ -23,11 +23,11 @@ def select_file():
     files = [x for x in inputs_path.iterdir() if x.is_file()]
 
     # show the files as a numbered list
-    print("\nAvailable files:")
+    print("\nAvailable files:") # type: ignore
     for index, file_obj in enumerate(files, start=1):
-        print(f"{index}. {file_obj.name}")
+        print(f"{index}. {file_obj.name}") # type: ignore
     
-    file_choice = int(input(f"Select a file (1-{len(files)}): "))
+    file_choice = int(input(f"Select a file (1-{len(files)}): "))  # type: ignore
     
     # get the selected file path object
     selected_file = files[file_choice - 1]
@@ -35,16 +35,16 @@ def select_file():
     # return it as a str
     return str(selected_file)
 
-def process_and_save_results(results, target_file, strategy_name, tf_string):
+def process_and_save_results(results, target_file, strategy_name):
     valid_results = [r for r in results if r is not None]
 
     # Extract base filename
     base_filename = os.path.splitext(os.path.basename(target_file))[0]
 
     # Construct output path
-    output_path = f"outputs/{base_filename}_{strategy_name}_{tf_string}.csv"
+    output_path = f"outputs/{base_filename}_{strategy_name}.csv"
 
     if valid_results:
         csv_output(valid_results, output_path)
     else:
-        pass
+        print("nothing found, nothing saved.")

@@ -1,16 +1,18 @@
 import io
-import os
+
 import pandas as pd
 import requests  # type: ignore[import-untyped]
 
+
 output_file = "inputs/lse.csv"
+
 
 def get_wikipedia_list(url, index_name):
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
         resp = requests.get(url, headers=headers)
         tables = pd.read_html(io.StringIO(resp.text))
-        
+
         # Find the correct table by converting columns to lowercase
         df = None
         for t in tables:
@@ -19,23 +21,24 @@ def get_wikipedia_list(url, index_name):
             if "epic" in lowercased_cols or "ticker" in lowercased_cols:
                 df = t
                 break
-                
+
         if df is None:
-            print(f"Could not find a valid table for {index_name}")
             return []
 
         # Find the specific ticker and name column dynamically
         ticker_col = next(c for c in df.columns if str(c).lower() in ["epic", "ticker"])
-        name_col = next(c for c in df.columns if str(c).lower() in ["company", "constituent"])
+        name_col = next(
+            c for c in df.columns if str(c).lower() in ["company", "constituent"]
+        )
 
         data = []
         for _, row in df.iterrows():
             ticker_val = str(row[ticker_col]).strip()
-            
+
             # Skip any header-like rows or empty tickers if Wikipedia has them
             if not ticker_val or ticker_val.lower() in ["epic", "ticker"]:
                 continue
-                
+
             data.append(
                 {
                     "ticker": f"{ticker_val}.L",
@@ -43,10 +46,10 @@ def get_wikipedia_list(url, index_name):
                 }
             )
         return data
-    except Exception as e:
+    except Exception:
         # Crucial for debugging: tell us WHAT went wrong instead of hiding it
-        print(f"Error fetching {index_name}: {e}")
         return []
+
 
 def main():
     f100 = get_wikipedia_list(
@@ -61,9 +64,9 @@ def main():
     if all_data:
         df = pd.DataFrame(all_data)
         df.to_csv(output_file, index=False)
-        print(f"Successfully saved {len(df)} rows to {output_file}")
     else:
-        print("No data was collected. File not saved.")
+        pass
+
 
 if __name__ == "__main__":
     main()

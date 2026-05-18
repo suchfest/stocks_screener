@@ -1,22 +1,22 @@
-from functools import partial
+import random
+import time
 
 # Import the new helper function
 from csv_logic import csv_import, process_and_save_results, select_file
 from fetchers import fetcher_dip, fetcher_rsi_sma, fetcher_trend
-from workers import run_with_workers
+from batching import batching
 
-
-# 1. Select the target file
+# select the target file
 target_file = select_file()
 df = csv_import(target_file)
-tickers = df["ticker"].tolist()
+all_tickers = df["ticker"].tolist()
 
-# 2. Show the Strategy Menu
+# show the Strategy Menu
 choice = input(
     "Strategy picker: \n Type 1 for Dip, \n Type 2 for Trend, \n Type 3 for RSI SMA \n and press Enter: "
 )
 
-# 3. Ask for Timeframe (Applies to all strategies)
+# ask for Timeframe
 timeframe_choice = input("Enter the timeframe: \n 1 - 1H, \n 2 - 4H, \n 3 - 1D: ")
 if timeframe_choice == "1":
     tf_string = "1h"
@@ -27,32 +27,26 @@ elif timeframe_choice == "3":
 else:
     raise ValueError("Invalid timeframe")
 
-# 4. Ask for Workers
-worker_count = int(input("Enter the number of workers (1-10): "))
-if not (0 < worker_count <= 10):
-    raise ValueError("Worker count must be between 0 and 10")
+# avail strategies
+strategy_mapping = {
+    "1": (fetcher_dip,     "dip"),
+    "2": (fetcher_trend,   "trend"),
+    "3": (fetcher_rsi_sma, "rsi_sma"),
+}
 
-# 5. Route to correct strategy and run
-if choice == "1":
-    task = partial(fetcher_dip, timeframe=tf_string)
-    fetch = run_with_workers(
-        task_function=task, items_to_process=tickers, num_workers=worker_count
-    )
-    process_and_save_results(fetch, target_file, "dip", tf_string)
+if choice not in strategy_mapping:
+    raise ValueError("Invalid strategy choice")
 
-elif choice == "2":
-    task = partial(fetcher_trend, timeframe=tf_string)
-    fetch = run_with_workers(
-        task_function=task, items_to_process=tickers, num_workers=worker_count
-    )
-    process_and_save_results(fetch, target_file, "trend", tf_string)
+# simplified picker from the strategy tuple above
+# istead of if, elif
+fetcher_func, strategy_name = strategy_mapping[choice]
 
-elif choice == "3":
-    task = partial(fetcher_rsi_sma, timeframe=tf_string)
-    fetch = run_with_workers(
-        task_function=task, items_to_process=tickers, num_workers=worker_count
-    )
-    process_and_save_results(fetch, target_file, "rsi_sma", tf_string)
+ 
+results = batching(fetcher_func, all_tickers, tf_string)
 
+if results:
+    saved_file = f"{strategy_name}_{tf_string}"
+    process_and_save_results(results, target_file, saved_file)
+    print(f"\nDone. {len(results)} signals found across {len(all_tickers)} tickers, \nsaved into {saved_file}")
 else:
-    pass
+    print(f"\nDone. 0 signals found across {len(all_tickers)} tickers, nothing saved.")

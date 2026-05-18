@@ -32,6 +32,7 @@ exclude = [".git", "__pycache__", ".nox", ".venv", "venv", "build", "dist"]
 [tool.ruff.lint]  
 select = ["E", "W", "F", "I", "A", "B", "C4", "SIM", "T20", "UP", "RUF"]  
 ignore = ["E501"] 
+ignore = ["T201"]
   
 [tool.ruff.lint.per-file-ignores]  
 "__init__.py" = ["F401"] 
