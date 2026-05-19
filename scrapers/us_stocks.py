@@ -1,4 +1,5 @@
 import time
+import traceback
 
 import pandas as pd
 import yfinance as yf
@@ -77,16 +78,21 @@ def get_all_nasdaq_stocks():
 
 
 
-def save_to_file(df, filename="inputs/us_stocks.csv"):
+def save_to_file(df, output_file="inputs/us_stocks.csv"):
     try:
         import os
 
-        # Get the directory where the script is located
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        output_path = os.path.join(script_dir, filename)
+        # Project root
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        script_route = os.path.dirname(project_root)
+        output_path = os.path.join(script_route, output_file)
+        parent = os.path.dirname(output_path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
         df.to_csv(output_path, index=False)
         return output_path
-    except Exception:
+    except Exception as e:
+        traceback.print_exc()
         return None
 
 
@@ -96,7 +102,9 @@ if __name__ == "__main__":
 
     if all_stocks_df is not None:
         # Save to CSV
-        save_to_file(all_stocks_df)
-
+        out = save_to_file(all_stocks_df)
+        if out is None:
+            print("CSV was not written (see save_to_file errors above)")
     else:
-        pass
+        print("No DataFrame to save (fetch failed; see errors above)")
+    print("Done")

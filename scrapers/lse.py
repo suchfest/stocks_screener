@@ -1,10 +1,12 @@
+import os
 import io
+
 
 import pandas as pd
 import requests  # type: ignore[import-untyped] # FIX ME
 
+output_file = "inputs/lse_list.csv"
 
-OUTPUT_FILE = "inputs/lse_list.csv"
 
 
 def get_wikipedia_list(url, index_name):
@@ -44,7 +46,16 @@ def main():
 
     if all_data:
         df = pd.DataFrame(all_data)
-        df.to_csv(OUTPUT_FILE, index=False)
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        script_route = os.path.dirname(project_root)
+        output_path = os.path.join(script_route, output_file)
+        parent = os.path.dirname(output_path)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+        df.to_csv(output_path, index=False)
+        
+        return output_path
+
     else:
         pass
 
