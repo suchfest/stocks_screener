@@ -2,9 +2,9 @@ import random
 import time
 
 # Import the new helper function
-from csv_logic import csv_import, process_and_save_results, select_file
+from csv_logic import csv_import, save_results, select_file
 from fetchers import fetcher_dip, fetcher_rsi_sma, fetcher_trend
-from batching import batching
+from workers import worker_logic
 
 # select the target file
 target_file = select_file()
@@ -37,16 +37,22 @@ strategy_mapping = {
 if choice not in strategy_mapping:
     raise ValueError("Invalid strategy choice")
 
+# ask for the number of workers
+worker_count = int(input("Enter the number of workers (1-10): "))
+if not (0 < worker_count <= 10):
+    raise ValueError("Worker count must be between 1 and 10")
+
+
 # simplified picker from the strategy tuple above
 # istead of if, elif
 fetcher_func, strategy_name = strategy_mapping[choice]
 
  
-results = batching(fetcher_func, all_tickers, tf_string)
+results = worker_logic(fetcher_func, all_tickers, tf_string, worker_count)
 
 if results:
     saved_file = f"{strategy_name}_{tf_string}"
-    process_and_save_results(results, target_file, saved_file)
-    print(f"\nDone. {len(results)} signals found across {len(all_tickers)} tickers, \nsaved into {saved_file}")
+    save_results(results, target_file, saved_file)
+    print(f"\nDone. {len(results)} signals found across {len(all_tickers)} tickers, \nsaved into {strategy_name}_{saved_file}")
 else:
     print(f"\nDone. 0 signals found across {len(all_tickers)} tickers, nothing saved.")

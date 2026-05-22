@@ -35,7 +35,7 @@ def select_file():
     # return it as a str
     return str(selected_file)
 
-def process_and_save_results(results, target_file, strategy_name):
+def save_results(results, target_file, strategy_name):
     valid_results = [r for r in results if r is not None]
 
     # Extract base filename

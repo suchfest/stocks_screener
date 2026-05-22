@@ -28,3 +28,5 @@ df["ticker"] = df["ticker"].astype(str) + ".DE"
 
 # Save to the new path
 df.to_csv(output_file, index=False)
+
+print("done")
